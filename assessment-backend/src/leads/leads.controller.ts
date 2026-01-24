@@ -34,4 +34,14 @@ export class LeadsController {
   findAll(@Req() req: AuthenticatedRequest) {
     return this.leadsService.findAllForUser(req.user.userId);
   }
+
+  @Get(':id')
+  async findOne(@Req() req: AuthenticatedRequest) {
+    // Always get id from params and ensure it's a string
+    let leadId = req.params['id'];
+    if (Array.isArray(leadId)) {
+      leadId = leadId[0];
+    }
+    return this.leadsService.findOneForUser(req.user.userId, leadId);
+  }
 }

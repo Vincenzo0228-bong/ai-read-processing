@@ -1,3 +1,4 @@
+import Redis from 'ioredis';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -17,6 +18,7 @@ import { Injectable, Logger } from '@nestjs/common';
 })
 @Injectable()
 export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  private redisSub: Redis;
   @WebSocketServer()
   server: Server;
 
@@ -24,6 +26,28 @@ export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   afterInit(server: Server) {
     this.logger.log('WebSocket Gateway initialized');
+    // Subscribe to Redis Pub/Sub for workflow status updates
+    this.redisSub = new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: Number(process.env.REDIS_PORT) || 6379,
+    });
+    this.redisSub.subscribe('workflow-status', (err, count) => {
+      if (err) {
+        this.logger.error('Failed to subscribe to workflow-status channel', err);
+      } else {
+        this.logger.log('Subscribed to workflow-status channel');
+      }
+    });
+    this.redisSub.on('message', (channel, message) => {
+      if (channel === 'workflow-status') {
+        try {
+          const { userId, leadId, status } = JSON.parse(message);
+          this.emitWorkflowStatusUpdate(userId, leadId, status);
+        } catch (err) {
+          this.logger.error('Failed to parse workflow-status message', err);
+        }
+      }
+    });
   }
 
   handleConnection(client: any) {
@@ -36,6 +60,10 @@ export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
   emitWorkflowStatusUpdate(userId: string, leadId: string, status: string) {
     // Emit to all clients for now; can be filtered by userId if needed
+    if (!this.server) {
+      this.logger.error('WebSocket server is not initialized');
+      return;
+    }
     this.server.emit('workflowStatus', { userId, leadId, status });
   }
 }
