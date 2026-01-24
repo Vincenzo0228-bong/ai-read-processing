@@ -150,14 +150,10 @@ export class WorkflowService {
 
   private async runIntentStep(workflow: Workflow, step: WorkflowStep) {
     try {
-      this.logger.log(`[runIntentStep] ENTER function for workflow: ${workflow.id}`);
       this.logger.log(`[runIntentStep] Starting for workflow: ${workflow.id}`);
       const message: string = String(workflow.context.message ?? '');
-      this.logger.log(`[runIntentStep] Calling AI for intent classification...`);
       const raw = await this.ai.complete(intentPrompt(message));
-      this.logger.log(`[runIntentStep] AI response: ${raw}`);
       const parsed = IntentSchema.parse(JSON.parse(raw));
-      this.logger.log(`[runIntentStep] Parsed intent: ${JSON.stringify(parsed)}`);
       await this.stepRepo.update(step.id, {
         status: 'completed',
         output: parsed as any,
@@ -193,11 +189,9 @@ export class WorkflowService {
       }
       const message: string = String(workflow.context.message ?? '');
       const category: string = String((workflow.context.intent && workflow.context.intent.category) ?? '');
-      this.logger.log(`[runExtractionStep] Calling AI for data extraction...`);
       const raw = await this.ai.complete(extractionPrompt(message, category));
       this.logger.log(`[runExtractionStep] AI response: ${raw}`);
       const parsed = ExtractionSchema.parse(JSON.parse(raw));
-      this.logger.log(`[runExtractionStep] Parsed extraction: ${JSON.stringify(parsed)}`);
       await this.stepRepo.update(step.id, {
         status: 'completed',
         output: parsed as any,

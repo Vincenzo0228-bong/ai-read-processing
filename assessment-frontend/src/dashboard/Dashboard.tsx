@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { getLeads, createLead } from '../api/leads';
 import LeadList from './LeadList';
 import LeadModal from './LeadModal';
@@ -50,11 +51,28 @@ export default function Dashboard() {
 		setLeads(await getLeads());
 	}
 
+
 	useEffect(() => {
 		const fetchLeads = async () => {
 			await load();
 		};
 		fetchLeads();
+
+		// Real-time workflow status updates
+		const socket = io('http://localhost:3000/workflow', {
+			transports: ['websocket'],
+			withCredentials: true,
+		});
+		socket.on('workflowStatus', ({ leadId, status }) => {
+			setLeads((prevLeads) =>
+				prevLeads.map((lead) =>
+					lead.id === leadId ? { ...lead, status } : lead
+				)
+			);
+		});
+		return () => {
+			socket.disconnect();
+		};
 	}, []);
 
 	// Optimistically add new lead
