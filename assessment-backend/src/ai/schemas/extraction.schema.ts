@@ -12,7 +12,7 @@ export const CoreFields = {
     '500-2000',
     '2000-10000',
     '>10000',
-    'unknown',
+    'unknown'
   ]),
   language: z.string().optional(),
   confidence: z.number().min(0).max(1),
