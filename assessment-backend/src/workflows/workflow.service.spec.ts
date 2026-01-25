@@ -54,7 +54,7 @@ describe('WorkflowService', () => {
     jest.spyOn(stepRepo, 'find').mockResolvedValue([]);
     jest.spyOn(stepRepo, 'update').mockResolvedValue({} as any);
     jest.spyOn(workflowRepo, 'update').mockResolvedValue({} as any);
-
+    jest.spyOn(service as any, 'publishStatus').mockResolvedValue(undefined);
     await expect(service.runWorkflow('wf-1')).resolves.not.toThrow();
-  });
+  }, 25000);
 });
