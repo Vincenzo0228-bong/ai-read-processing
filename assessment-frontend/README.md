@@ -1,25 +1,32 @@
 # Assessment Frontend (React)
 
-## Project Initialization
+## Prerequisites
+- Node.js v22+ (see .nvmrc)
+- npm v10+
+- Docker (for backend and database)
 
-1. `cd` into `assessment-frontend/`
+## Installation
+1. Navigate to the frontend directory:
+   ```sh
+   cd assessment-frontend
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
 
-2. Set your node environment
+## Running the Frontend
+1. Start the backend and database using Docker (see backend README for details).
+2. Start the frontend development server:
+   ```sh
+   npm run dev
+   ```
+3. Open your browser and go to the URL shown in the terminal (usually http://localhost:5173).
 
-   - Run `nvm install && nvm use`, or
+## Environment Variables
+- The frontend expects the backend API to be available at `http://localhost:3000` by default.
+- To change the API URL, set the `VITE_API_URL` environment variable in a `.env` file in the frontend directory.
 
-   - Alternatively manually set your node to v22+ and npm to v10+
-
-3. Run `npm install` to install dependencies
-
-   Note: Ensure you have properly set your node version before this step
-
-4. Run `npm run dev` to spin-up the frontend
-
-   The terminal should display the port to view the frontend application in your browser (e.g. `http://localhost:5173/`).
-
-   You can check that the frontend is running correctly by opening the provided url in your browser, where you should see a simple "Hello World" landing page.
-
-## Frontend Requirements
-
-Requirements can be found in the [frontend requirements doc](../requirements/frontend.md), or in `../requirements/frontend.md`
+## Notes
+- Ensure the backend and database are running before using the frontend.
+- For more details on requirements and features, see `../requirements/frontend.md`.

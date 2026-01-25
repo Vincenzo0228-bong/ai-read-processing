@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: blackrose
+      POSTGRES_DB: assessment
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    depends_on:
+      - postgres
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./assessment-backend
+    env_file:
+      - ./assessment-backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    build:
+      context: ./assessment-backend
+      dockerfile: Dockerfile.worker
+    env_file:
+      - ./assessment-backend/.env
+    depends_on:
+      - postgres
+      - redis
+    command: ["node", "dist/workflows/worker.main.js"]
+
+volumes:
+  pgdata:
+  pgadmin-data:
