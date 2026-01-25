@@ -264,7 +264,7 @@ export class AIClient {
           extraction: {
             extracted_fields: {
               contact_channel: 'webchat',
-              urgency: 'unknown',
+              urgency: 'low',
               timeline: 'unknown',
               budget_range: 'unknown',
               confidence: 0.7,
@@ -294,7 +294,7 @@ export class AIClient {
           extraction: {
             extracted_fields: {
               contact_channel: 'webchat',
-              urgency: 'unknown',
+              urgency: 'low',
               timeline: 'unknown',
               budget_range: 'unknown',
               confidence: 0.6,
@@ -340,7 +340,21 @@ export class AIClient {
       // Extraction mock
       if (prompt.toLowerCase().includes('extract')) {
         const match = matchSample(prompt);
-        return JSON.stringify(match ? match.extraction : samples[0].extraction);
+        // Try to extract contact_channel from the prompt
+        let contact_channel = 'webchat';
+        const contactChannelMatch = prompt.match(/contact[_ ]channel[":= ]+([\w-]+)/i);
+        if (contactChannelMatch && contactChannelMatch[1]) {
+          contact_channel = contactChannelMatch[1];
+        } else {
+          // Try to find in JSON-like input
+          const jsonMatch = prompt.match(/"contact_channel"\s*:\s*"([^"]+)"/i);
+          if (jsonMatch && jsonMatch[1]) {
+            contact_channel = jsonMatch[1];
+          }
+        }
+        const extraction = match ? { ...match.extraction } : { ...samples[0].extraction };
+        extraction.extracted_fields = { ...extraction.extracted_fields, contact_channel };
+        return JSON.stringify(extraction);
       }
       return JSON.stringify({ mock: true });
     }

@@ -39,9 +39,11 @@ export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       }
     });
     this.redisSub.on('message', (channel, message) => {
+      this.logger.log(`[Redis] Message received on channel ${channel}: ${message}`);
       if (channel === 'workflow-status') {
         try {
           const { userId, leadId, status } = JSON.parse(message);
+          this.logger.log(`[Gateway] Emitting workflowStatus: userId=${userId}, leadId=${leadId}, status=${status}`);
           this.emitWorkflowStatusUpdate(userId, leadId, status);
         } catch (err) {
           this.logger.error('Failed to parse workflow-status message', err);
@@ -51,11 +53,11 @@ export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   handleConnection(client: any) {
-    this.logger.log(`Client connected: ${client.id}`);
+    this.logger.log(`[Socket] Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: any) {
-    this.logger.log(`Client disconnected: ${client.id}`);
+    this.logger.log(`[Socket] Client disconnected: ${client.id}`);
   }
 
   emitWorkflowStatusUpdate(userId: string, leadId: string, status: string) {
@@ -64,6 +66,7 @@ export class WorkflowGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       this.logger.error('WebSocket server is not initialized');
       return;
     }
+    this.logger.log(`[Socket] Emitting workflowStatus to clients: userId=${userId}, leadId=${leadId}, status=${status}`);
     this.server.emit('workflowStatus', { userId, leadId, status });
   }
 }

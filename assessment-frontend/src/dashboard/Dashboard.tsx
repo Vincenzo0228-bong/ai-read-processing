@@ -63,12 +63,24 @@ export default function Dashboard() {
 			transports: ['websocket'],
 			withCredentials: true,
 		});
-		socket.on('workflowStatus', ({ leadId, status }) => {
-			setLeads((prevLeads) =>
-				prevLeads.map((lead) =>
+		socket.on('connect', () => {
+			console.log('[Socket] Connected:', socket.id);
+		});
+		socket.on('disconnect', (reason) => {
+			console.log('[Socket] Disconnected:', reason);
+		});
+		socket.on('connect_error', (err) => {
+			console.error('[Socket] Connection error:', err);
+		});
+		socket.on('workflowStatus', ({ userId, leadId, status }) => {
+			console.log('[Socket] workflowStatus event received:', { userId, leadId, status });
+			setLeads((prevLeads) => {
+				const updated = prevLeads.map((lead) =>
 					lead.id === leadId ? { ...lead, status } : lead
-				)
-			);
+				);
+				console.log('[Socket] Updated leads:', updated);
+				return updated;
+			});
 		});
 		return () => {
 			socket.disconnect();
